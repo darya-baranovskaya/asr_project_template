@@ -18,28 +18,34 @@
     "args": {
       "n_feats": 128,
       "fc_hidden": 512,
-      "num_layers": 3
+      "num_layers": 3,
+      "num_heads": 4
     }
   },
   "data": {
     "train": {
-      "batch_size": 20,
+      "batch_size": 32,
       "num_workers": 0,
       "datasets": [
         {
-          "type": "LJ"
+          "type": "LJDataset",
+          "args": {
+              "mode": "train",
+              "max_audio_length": 30.0,
+              "max_text_length": 200
+          }
         }
       ]
     },
     "val": {
-      "batch_size": 20,
+      "batch_size": 32,
       "num_workers": 0,
       "datasets": [
         {
           "type": "LibrispeechDataset",
           "args": {
-              "part": "dev-clean",
-              "max_audio_length": 20.0,
+              "part": "test-clean",
+              "max_audio_length": 30.0,
               "max_text_length": 200,
               "limit" : 20
           }
