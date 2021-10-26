@@ -3,6 +3,7 @@ from typing import List, Tuple
 import torch
 
 from hw_asr.text_encoder.char_text_encoder import CharTextEncoder
+from fast_ctc_decode import beam_search
 
 
 class CTCCharTextEncoder(CharTextEncoder):
@@ -31,6 +32,27 @@ class CTCCharTextEncoder(CharTextEncoder):
             prev = ind
         return ''.join([self.ind2char[ind] for ind in result])
 
+    # def ctc_beam_search(self, probs: torch.tensor, probs_length,
+    #                     beam_size: int = 100) -> List[Tuple[str, float]]:
+    #     """
+    #     Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
+    #     """
+    #     assert len(probs.shape) == 2
+    #     char_length, voc_size = probs.shape
+    #     assert voc_size == len(self.ind2char)
+    #     hypos = []
+    #     # TODO: your code here
+    #     # raise NotImplementedError
+    #     hypos.append([[], 0])
+    #     for char in probs:
+    #         new_paths = []
+    #         for path in hypos:
+    #             for idx_prob, el_prob in enumerate(char):
+    #                 new_paths.append([path[0] + [idx_prob], path[1] * el_prob])
+    #         hypos = sorted(new_paths, key=lambda x: x[1])
+    #         hypos = hypos[:beam_size]
+    #     return sorted(hypos, key=lambda x: x[1], reverse=True)
+
     def ctc_beam_search(self, probs: torch.tensor, probs_length,
                         beam_size: int = 100) -> List[Tuple[str, float]]:
         """
@@ -39,15 +61,8 @@ class CTCCharTextEncoder(CharTextEncoder):
         assert len(probs.shape) == 2
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
-        hypos = []
-        # TODO: your code here
-        # raise NotImplementedError
-        hypos.append([[], 0])
-        for char in probs:
-            new_paths = []
-            for path in hypos:
-                for idx_prob, el_prob in enumerate(char):
-                    new_paths.append([path[0] + [idx_prob], path[1] * el_prob])
-            hypos = sorted(new_paths, key=lambda x: x[1])
-            hypos = hypos[:beam_size]
-        return sorted(hypos, key=lambda x: x[1], reverse=True)
+        alphabet = self.EMPTY_TOK + ''.join(self.ind2char.values())
+        with torch.no_grad():
+            probs = probs.exp().numpy()
+            seq, path = beam_search(probs, alphabet, beam_size=beam_size, lm_model=self.lm)[0]
+        return seq
