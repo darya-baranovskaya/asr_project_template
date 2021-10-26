@@ -13,7 +13,7 @@ class MainModel1(BaseModel):
         self.fc = nn.Sequential(
                   nn.Linear(in_features=fc_hidden * 2, out_features=fc_hidden),
                   nn.LeakyReLU(),
-                  nn.Linear(in_features=fc_hidden, out_features=fc_hidden))
+                  nn.Linear(in_features=fc_hidden, out_features=n_class))
 
     def forward(self, spectrogram, *args, **kwargs):
         x = spectrogram.permute(0, 2, 1)

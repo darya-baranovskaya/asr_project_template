@@ -53,7 +53,7 @@ class CTCCharTextEncoder(CharTextEncoder):
     #         hypos = hypos[:beam_size]
     #     return sorted(hypos, key=lambda x: x[1], reverse=True)
 
-    def ctc_beam_search(self, probs: torch.tensor, probs_length,
+    def ctc_beam_search(self, probs: torch.tensor,
                         beam_size: int = 100) -> List[Tuple[str, float]]:
         """
         Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
@@ -61,8 +61,8 @@ class CTCCharTextEncoder(CharTextEncoder):
         assert len(probs.shape) == 2
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
-        alphabet = self.EMPTY_TOK + ''.join(self.ind2char.values())
+        alphabet = ''.join(self.ind2char.values())
         with torch.no_grad():
-            probs = probs.exp().numpy()
-            seq, path = beam_search(probs, alphabet, beam_size=beam_size, lm_model=self.lm)[0]
+            probs = probs.numpy()
+            seq, path = beam_search(probs, alphabet, beam_size=beam_size)
         return seq
