@@ -10,8 +10,15 @@
     }
   },
   "augmentations": {
-    "wave": [],
-    "spectrogram": []
+    "wave": [
+      {"type": "Gain", "args": {"p": 0.1, "min_gain_in_db": -15.0, "max_gain_in_db":  5.0}},
+      {"type": "PolarityInversion", "args": {"p": 0.1}},
+      {"type": "AddColoredNoise", "args": {"p": 0.1, "sample_rate": 20}}
+    ],
+    "spectrogram": [
+      {"type": "TimeMasking", "args": {"p": 0.1, "time": 20}},
+      {"type": "FrequencyMasking", "args": {"p": 0.1, "freq_mask_param": 30, "frequency": 20}}
+    ]
   },
   "arch": {
     "type": "MainModel1",
@@ -19,12 +26,18 @@
       "n_feats": 128,
       "fc_hidden": 512,
       "num_layers": 3,
-      "num_heads": 4
+      "num_heads": 0
     }
   },
   "data": {
     "train": {
-      "batch_size": 32,
+      "batch_sampler": {
+        "type": "GroupLengthBatchSampler",
+        "args": {
+          "batch_size": 32,
+          "batches_per_group": 3
+        }
+      },
       "num_workers": 0,
       "datasets": [
         {
@@ -63,6 +76,20 @@
     "args": {}
   },
   "metrics": [
+    {
+      "type": "BeamSearchWERMetric",
+      "args": {
+        "name": "WER (beam search)",
+        "beam_size": 10
+      }
+    },
+    {
+      "type": "BeamSearchCERMetric",
+      "args": {
+        "name": "CER (beam search)",
+        "beam_size": 10
+      }
+    },
     {
       "type": "ArgmaxWERMetric",
       "args": {
