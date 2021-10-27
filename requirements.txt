@@ -14,3 +14,6 @@ torch_audiomentations
 editdistance
 fast_ctc_decode
 wandb
+tokenizers
+pyctcdecode
+kenlm
